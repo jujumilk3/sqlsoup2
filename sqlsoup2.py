@@ -10,16 +10,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker, mapper, \
                             object_session, attributes
 from sqlalchemy.orm.interfaces import MapperExtension, EXT_CONTINUE
 from sqlalchemy.sql import expression
-import sys
 
-py2k = sys.version_info < (3, 0)
-
-if py2k:
-    string_types = basestring,
-else:
-    string_types = string_types = str,
-
-__version__ = '0.9.1'
+__version__ = '0.0.1'
 __all__ = ['SQLSoupError', 'SQLSoup', 'SelectableClassType', 'TableClassType', 'Session']
 
 Session = scoped_session(sessionmaker())
@@ -132,10 +124,6 @@ def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
     selectable = expression._clause_element_as_expr(selectable)
     mapname = 'Mapped' + _selectable_name(selectable)
 
-    if py2k and isinstance(mapname, unicode):
-        engine_encoding = engine.dialect.encoding
-        mapname = mapname.encode(engine_encoding)
-
     if isinstance(selectable, Table):
         klass = TableClassType(mapname, (base_cls,), {})
     else:
@@ -206,7 +194,7 @@ class SQLSoup(object):
 
         if isinstance(engine_or_metadata, MetaData):
             self._metadata = engine_or_metadata
-        elif isinstance(engine_or_metadata, string_types + (Engine, )):
+        elif isinstance(engine_or_metadata, str + (Engine, )):
             self._metadata = MetaData(engine_or_metadata)
         else:
             raise ArgumentError("invalid engine or metadata argument %r" %
@@ -328,7 +316,7 @@ class SQLSoup(object):
             ))
 
         if tablename is not None:
-            if not isinstance(tablename, string_types):
+            if not isinstance(tablename, str):
                 raise ArgumentError("'tablename' argument must be a string."
                                     )
             if selectable is not None:
