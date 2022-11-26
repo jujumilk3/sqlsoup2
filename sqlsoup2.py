@@ -387,11 +387,7 @@ class SQLSoup(object):
         """
 
         # TODO give meaningful aliases
-        return self.map(
-            selectable.select(use_labels=True).alias("foo"),
-            base=base,
-            **mapper_args
-        )
+        return self.map(selectable.select(use_labels=True).alias("foo"), base=base, **mapper_args)
 
     def join(self, left, right, onclause=None, isouter=False, base=None, **mapper_args):
         """Create an :func:`.expression.join` and map to it.
