@@ -102,8 +102,10 @@ class SQLSoupTest(unittest.TestCase):
 
     def test_bad_names(self):
         db = sqlsoup2.SQLSoup(engine)
-
-        str(db.bad_names.c.query)
+        bad_names_entity = db.entity("bad_names")
+        columns = bad_names_entity._sa_class_manager.keys()
+        assert "id" in columns
+        assert "query" in columns
 
     def test_load(self):
         db = sqlsoup2.SQLSoup(engine)
