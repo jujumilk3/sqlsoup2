@@ -9,6 +9,7 @@ from sqlalchemy.orm import (
     scoped_session,
     session,
     sessionmaker,
+    Mapper
 )
 from sqlalchemy.orm.interfaces import EXT_CONTINUE, MapperOption
 from sqlalchemy.sql import expression
@@ -159,19 +160,17 @@ def _class_for_table(session, engine, selectable: Table, base_cls, mapper_kwargs
         return t1 == t2
 
     def __repr__(self):
-        L = ["%s=%r" % (key, getattr(self, key, "")) for key in self.__class__.c.keys()]
+        L = ["%s=%r" % (column.key, getattr(self, column.key, "")) for column in self.__class__.c.keys()]
         return "%s(%s)" % (self.__class__.__name__, ",".join(L))
 
     for m in ["__eq__", "__repr__", "__lt__"]:
         setattr(klass, m, eval(m))
     klass._table = selectable
     klass.c = expression.ColumnCollection()
-    print(mapper_kwargs)
-    # TODO: Have to apply mapper from here
-    mappr = mapper(klass, selectable, extension=AutoAdd(session), **mapper_kwargs)
+    mappr: Mapper = mapper(klass, selectable, **mapper_kwargs)
 
     for k in mappr.iterate_properties:
-        klass.c[k.key] = k.columns[0]
+        klass.c.add(k.key, k.columns[0])
 
     klass._query = session.query_property()
     return klass
@@ -412,7 +411,7 @@ class SQLSoup(object):
         j = join(left, right, onclause=onclause, isouter=isouter)
         return self.map(j, base=base, **mapper_args)
 
-    def entity(self, attr, schema=None):
+    def entity(self, attr: str, schema=None):
         """Return the named entity from this :class:`.SQLSoup`, or
         create if not present.
 
