@@ -107,6 +107,7 @@ class SQLSoupTest(unittest.TestCase):
         assert "id" in columns
         assert "query" in columns
 
+    # TODO: fix with this
     def test_load(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedUsers = db.users
@@ -124,6 +125,7 @@ class SQLSoupTest(unittest.TestCase):
             ],
         )
 
+    # TODO: fix with this
     def test_order_by(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedUsers = db.users
@@ -140,6 +142,7 @@ class SQLSoupTest(unittest.TestCase):
             ],
         )
 
+    # TODO: fix with this
     def test_whereclause(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedUsers = db.users
@@ -157,6 +160,7 @@ class SQLSoupTest(unittest.TestCase):
             ],
         )
 
+    # TODO: fix with this
     def test_first(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedUsers = db.users
@@ -185,6 +189,7 @@ class SQLSoupTest(unittest.TestCase):
         )
         db.rollback()
 
+    # TODO: fix with this
     def test_crud(self):
 
         # note we're testing autoflush here too...
@@ -203,6 +208,7 @@ class SQLSoupTest(unittest.TestCase):
         loan = db.loans.filter_by(book_id=2, user_name="Bhargan Basepair").first()
         assert loan is None
 
+    # TODO: fix with this
     def test_cls_crud(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedUsers = db.users
@@ -215,6 +221,7 @@ class SQLSoupTest(unittest.TestCase):
             ),
         )
 
+    # TODO: fix with this
     def test_map_table(self):
         db = sqlsoup2.SQLSoup(engine)
         users = Table("users", db._metadata, autoload=True)
@@ -232,6 +239,7 @@ class SQLSoupTest(unittest.TestCase):
             ],
         )
 
+    # TODO: fix with this
     def test_mapped_join(self):
         db = sqlsoup2.SQLSoup(engine)
         join1 = MappedJoin = db.join(db.users, db.loans, isouter=True)
@@ -301,6 +309,7 @@ class SQLSoupTest(unittest.TestCase):
             ],
         )
 
+    # TODO: fix with this
     def test_relations(self):
         db = sqlsoup2.SQLSoup(engine)
         db.users.relate("loans", db.loans)
@@ -323,12 +332,14 @@ class SQLSoupTest(unittest.TestCase):
         del db._cache["users"]
         db.users.relate("loans", db.loans, order_by=db.loans.loan_date, cascade="all, delete-orphan")
 
+    # TODO: fix with this
     def test_relate_m2o(self):
         db = sqlsoup2.SQLSoup(engine)
         db.loans.relate("user", db.users)
         u1 = db.users.filter(db.users.c.name == "Joe Student").one()
         eq_(db.loans.first().user, u1)
 
+    # TODO: fix with this
     def test_explicit_session(self):
         Session = scoped_session(sessionmaker())
         db = sqlsoup2.SQLSoup(engine, session=Session)
@@ -342,6 +353,7 @@ class SQLSoupTest(unittest.TestCase):
             sess.rollback()
             sess.close()
 
+    # TODO: fix with this
     def test_selectable(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedBooks = db.books
@@ -385,6 +397,7 @@ class SQLSoupTest(unittest.TestCase):
         db = sqlsoup2.SQLSoup(engine, base=subclass)
         assert issubclass(db.entity("loans"), subclass)
 
+    # TODO: fix with this
     def test_filter_by_order_by(self):
         db = sqlsoup2.SQLSoup(engine)
         MappedUsers = db.users
