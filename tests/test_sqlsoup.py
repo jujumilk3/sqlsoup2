@@ -1,8 +1,7 @@
 import datetime
 import unittest
 
-from sqlalchemy import (Column, Integer, Table, create_engine, desc, exc, func,
-                        or_, select, util)
+from sqlalchemy import Column, Integer, Table, create_engine, desc, exc, func, or_, select, util
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import sqlsoup2

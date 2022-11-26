@@ -1,8 +1,15 @@
 from sqlalchemy import MetaData, Table, join, schema, sql, util
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import (attributes, class_mapper, mapper, object_session,
-                            relationship, scoped_session, session,
-                            sessionmaker)
+from sqlalchemy.orm import (
+    attributes,
+    class_mapper,
+    mapper,
+    object_session,
+    relationship,
+    scoped_session,
+    session,
+    sessionmaker,
+)
 from sqlalchemy.orm.interfaces import EXT_CONTINUE, MapperOption
 from sqlalchemy.sql import expression
 
