@@ -1,6 +1,7 @@
 """
 
 """
+from typing import Union
 
 from sqlalchemy import Table, MetaData, join
 from sqlalchemy import schema, sql, util
@@ -8,7 +9,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import scoped_session, sessionmaker, mapper, \
                             class_mapper, relationship, session,\
                             object_session, attributes
-from sqlalchemy.orm.interfaces import MapperExtension, EXT_CONTINUE
+from sqlalchemy.orm.interfaces import MapperOption, EXT_CONTINUE
 from sqlalchemy.sql import expression
 
 __version__ = '0.0.1'
@@ -23,7 +24,7 @@ object for each application thread which refers to it.
 
 """
 
-class AutoAdd(MapperExtension):
+class AutoAdd(MapperOption):
     def __init__(self, scoped_session):
         self.scoped_session = scoped_session
 
@@ -191,10 +192,9 @@ class SQLSoup(object):
 
         self.session = session or Session
         self.base = base
-
         if isinstance(engine_or_metadata, MetaData):
             self._metadata = engine_or_metadata
-        elif isinstance(engine_or_metadata, str + (Engine, )):
+        elif isinstance(engine_or_metadata, (str, Engine)):
             self._metadata = MetaData(engine_or_metadata)
         else:
             raise ArgumentError("invalid engine or metadata argument %r" %
