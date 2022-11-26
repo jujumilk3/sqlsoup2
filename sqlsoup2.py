@@ -1,6 +1,7 @@
 from sqlalchemy import MetaData, Table, join, schema, sql, util
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import (
+    Mapper,
     attributes,
     class_mapper,
     mapper,
@@ -9,7 +10,6 @@ from sqlalchemy.orm import (
     scoped_session,
     session,
     sessionmaker,
-    Mapper
 )
 from sqlalchemy.orm.interfaces import EXT_CONTINUE, MapperOption
 from sqlalchemy.sql import expression
