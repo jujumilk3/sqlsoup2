@@ -129,8 +129,7 @@ def _selectable_name(selectable):
         return x
 
 
-def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
-    selectable = expression._clause_element_as_expr(selectable)
+def _class_for_table(session, engine, selectable: Table, base_cls, mapper_kwargs):
     mapname = "Mapped" + _selectable_name(selectable)
 
     if isinstance(selectable, Table):
@@ -167,6 +166,8 @@ def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
         setattr(klass, m, eval(m))
     klass._table = selectable
     klass.c = expression.ColumnCollection()
+    print(mapper_kwargs)
+    # TODO: Have to apply mapper from here
     mappr = mapper(klass, selectable, extension=AutoAdd(session), **mapper_kwargs)
 
     for k in mappr.iterate_properties:
@@ -387,7 +388,7 @@ class SQLSoup(object):
 
         # TODO give meaningful aliases
         return self.map(
-            expression._clause_element_as_expr(selectable).select(use_labels=True).alias("foo"),
+            selectable.select(use_labels=True).alias("foo"),
             base=base,
             **mapper_args
         )
