@@ -284,7 +284,13 @@ class SQLSoup(object):
         self.session.expunge_all()
 
     def map_to(
-        self, attrname, tablename=None, selectable: Table=None, schema=None, base=None, mapper_args=util.immutabledict()
+        self,
+        attrname,
+        tablename=None,
+        selectable: Table = None,
+        schema=None,
+        base=None,
+        mapper_args=util.immutabledict(),
     ):
         """Configure a mapping to the given attrname.
 
