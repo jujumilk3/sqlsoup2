@@ -75,7 +75,7 @@ class SelectableClassType(type):
     def __clause_element__(cls):
         return cls._table
 
-    def __getattr__(cls, attr):
+    def __getattr__(cls, attr: str):
         if attr == "_query":
             # called during mapper init
             raise AttributeError()
@@ -96,7 +96,7 @@ class TableClassType(SelectableClassType):
         o.__dict__.update(kwargs)
         return o
 
-    def relate(cls, propname, *args, **kwargs):
+    def relate(cls, propname: str, *args, **kwargs):
         """Produce a relationship between this mapped table and another
         one.
 
@@ -107,7 +107,7 @@ class TableClassType(SelectableClassType):
         class_mapper(cls)._configure_property(propname, relationship(*args, **kwargs))
 
 
-def _is_outer_join(selectable):
+def _is_outer_join(selectable: Table):
     if not isinstance(selectable, sql.Join):
         return False
     if selectable.isouter:
@@ -115,7 +115,7 @@ def _is_outer_join(selectable):
     return _is_outer_join(selectable.left) or _is_outer_join(selectable.right)
 
 
-def _selectable_name(selectable):
+def _selectable_name(selectable: Table):
     if isinstance(selectable, sql.Alias):
         return _selectable_name(selectable.element)
     elif isinstance(selectable, sql.Select):
@@ -284,7 +284,7 @@ class SQLSoup(object):
         self.session.expunge_all()
 
     def map_to(
-        self, attrname, tablename=None, selectable=None, schema=None, base=None, mapper_args=util.immutabledict()
+        self, attrname, tablename=None, selectable: Table=None, schema=None, base=None, mapper_args=util.immutabledict()
     ):
         """Configure a mapping to the given attrname.
 
@@ -349,7 +349,7 @@ class SQLSoup(object):
         self._cache[attrname] = mapped_cls
         return mapped_cls
 
-    def map(self, selectable, base=None, **mapper_args):
+    def map(self, selectable: Table, base=None, **mapper_args):
         """Map a selectable directly.
 
         The class and its mapping are not cached and will
@@ -368,7 +368,7 @@ class SQLSoup(object):
 
         return _class_for_table(self.session, self.engine, selectable, base or self.base, mapper_args)
 
-    def with_labels(self, selectable, base=None, **mapper_args):
+    def with_labels(self, selectable: Table, base=None, **mapper_args):
         """Map a selectable directly, wrapping the
         selectable in a subquery with labels.
 
