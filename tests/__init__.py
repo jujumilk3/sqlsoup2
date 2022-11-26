@@ -1,12 +1,15 @@
 import re
 
+
 def eq_(a, b, msg=None):
     """Assert a == b, with repr messaging on failure."""
     assert a == b, msg or "%r != %r" % (a, b)
 
+
 def ne_(a, b, msg=None):
     """Assert a != b, with repr messaging on failure."""
     assert a != b, msg or "%r == %r" % (a, b)
+
 
 def assert_raises(except_cls, callable_, *args, **kw):
     try:
@@ -17,6 +20,7 @@ def assert_raises(except_cls, callable_, *args, **kw):
 
     # assert outside the block so it works for AssertionError too !
     assert success, "Callable did not raise an exception"
+
 
 def assert_raises_message(except_cls, msg, callable_, *args, **kwargs):
     try:

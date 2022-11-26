@@ -3,17 +3,16 @@
 """
 from typing import Union
 
-from sqlalchemy import Table, MetaData, join
-from sqlalchemy import schema, sql, util
+from sqlalchemy import MetaData, Table, join, schema, sql, util
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import scoped_session, sessionmaker, mapper, \
-                            class_mapper, relationship, session,\
-                            object_session, attributes
-from sqlalchemy.orm.interfaces import MapperOption, EXT_CONTINUE
+from sqlalchemy.orm import (attributes, class_mapper, mapper, object_session,
+                            relationship, scoped_session, session,
+                            sessionmaker)
+from sqlalchemy.orm.interfaces import EXT_CONTINUE, MapperOption
 from sqlalchemy.sql import expression
 
-__version__ = '0.0.1'
-__all__ = ['SQLSoupError', 'SQLSoup', 'SelectableClassType', 'TableClassType', 'Session']
+__version__ = "0.0.1"
+__all__ = ["SQLSoupError", "SQLSoup", "SelectableClassType", "TableClassType", "Session"]
 
 Session = scoped_session(sessionmaker())
 """SQLSoup's default session registry.
@@ -23,6 +22,7 @@ and provides a new :class:`sqlalchemy.orm.session.Session`
 object for each application thread which refers to it.
 
 """
+
 
 class AutoAdd(MapperOption):
     def __init__(self, scoped_session):
@@ -35,6 +35,7 @@ class AutoAdd(MapperOption):
         def __init__(self, **kwargs):
             for key, value in kwargs.items():
                 setattr(self, key, value)
+
         return __init__
 
     def init_instance(self, mapper, class_, oldinit, instance, args, kwargs):
@@ -49,11 +50,14 @@ class AutoAdd(MapperOption):
             sess.expunge(instance)
         return EXT_CONTINUE
 
+
 class SQLSoupError(Exception):
     pass
 
+
 class ArgumentError(SQLSoupError):
     pass
+
 
 # metaclass is necessary to expose class methods with getattr, e.g.
 # we want to pass db.users.select through to users._mapper.select
@@ -64,19 +68,17 @@ class SelectableClassType(type):
     """
 
     def insert(cls, **kwargs):
-        raise SQLSoupError(
-            'SQLSoup can only modify mapped Tables (found: %s)' \
-              % cls._table.__class__.__name__
-        )
+        raise SQLSoupError("SQLSoup can only modify mapped Tables (found: %s)" % cls._table.__class__.__name__)
 
     def __clause_element__(cls):
         return cls._table
 
     def __getattr__(cls, attr):
-        if attr == '_query':
+        if attr == "_query":
             # called during mapper init
             raise AttributeError()
         return getattr(cls._query, attr)
+
 
 class TableClassType(SelectableClassType):
     """Represent a SQLSoup mapping to a :class:`sqlalchemy.schema.Table`
@@ -86,6 +88,7 @@ class TableClassType(SelectableClassType):
     attribute is accessed from a :class:`.SQLSoup` instance.
 
     """
+
     def insert(cls, **kwargs):
         o = cls()
         o.__dict__.update(kwargs)
@@ -101,6 +104,7 @@ class TableClassType(SelectableClassType):
         """
         class_mapper(cls)._configure_property(propname, relationship(*args, **kwargs))
 
+
 def _is_outer_join(selectable):
     if not isinstance(selectable, sql.Join):
         return False
@@ -108,22 +112,24 @@ def _is_outer_join(selectable):
         return True
     return _is_outer_join(selectable.left) or _is_outer_join(selectable.right)
 
+
 def _selectable_name(selectable):
     if isinstance(selectable, sql.Alias):
         return _selectable_name(selectable.element)
     elif isinstance(selectable, sql.Select):
-        return ''.join(_selectable_name(s) for s in selectable.froms)
+        return "".join(_selectable_name(s) for s in selectable.froms)
     elif isinstance(selectable, schema.Table):
         return selectable.name.capitalize()
     else:
         x = selectable.__class__.__name__
-        if x[0] == '_':
+        if x[0] == "_":
             x = x[1:]
         return x
 
+
 def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
     selectable = expression._clause_element_as_expr(selectable)
-    mapname = 'Mapped' + _selectable_name(selectable)
+    mapname = "Mapped" + _selectable_name(selectable)
 
     if isinstance(selectable, Table):
         klass = TableClassType(mapname, (base_cls,), {})
@@ -137,7 +143,7 @@ def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
         try:
             t2 = [getattr(o, k) for k in L]
         except AttributeError:
-            raise TypeError('unable to compare with %s' % o.__class__)
+            raise TypeError("unable to compare with %s" % o.__class__)
         return t1, t2
 
     # python2/python3 compatible system of
@@ -152,24 +158,21 @@ def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
         return t1 == t2
 
     def __repr__(self):
-        L = ["%s=%r" % (key, getattr(self, key, ''))
-             for key in self.__class__.c.keys()]
-        return '%s(%s)' % (self.__class__.__name__, ','.join(L))
+        L = ["%s=%r" % (key, getattr(self, key, "")) for key in self.__class__.c.keys()]
+        return "%s(%s)" % (self.__class__.__name__, ",".join(L))
 
-    for m in ['__eq__', '__repr__', '__lt__']:
+    for m in ["__eq__", "__repr__", "__lt__"]:
         setattr(klass, m, eval(m))
     klass._table = selectable
     klass.c = expression.ColumnCollection()
-    mappr = mapper(klass,
-                   selectable,
-                   extension=AutoAdd(session),
-                   **mapper_kwargs)
+    mappr = mapper(klass, selectable, extension=AutoAdd(session), **mapper_kwargs)
 
     for k in mappr.iterate_properties:
         klass.c[k.key] = k.columns[0]
 
     klass._query = session.query_property()
     return klass
+
 
 class SQLSoup(object):
     """Represent an ORM-wrapped database resource."""
@@ -197,8 +200,7 @@ class SQLSoup(object):
         elif isinstance(engine_or_metadata, (str, Engine)):
             self._metadata = MetaData(engine_or_metadata)
         else:
-            raise ArgumentError("invalid engine or metadata argument %r" %
-                                engine_or_metadata)
+            raise ArgumentError("invalid engine or metadata argument %r" % engine_or_metadata)
 
         self._cache = {}
         self.schema = None
@@ -278,8 +280,9 @@ class SQLSoup(object):
         """
         self.session.expunge_all()
 
-    def map_to(self, attrname, tablename=None, selectable=None,
-                    schema=None, base=None, mapper_args=util.immutabledict()):
+    def map_to(
+        self, attrname, tablename=None, selectable=None, schema=None, base=None, mapper_args=util.immutabledict()
+    ):
         """Configure a mapping to the given attrname.
 
         This is the "master" method that can be used to create any
@@ -310,56 +313,38 @@ class SQLSoup(object):
         """
         if attrname in self._cache:
             raise SQLSoupError(
-                "Attribute '%s' is already mapped to '%s'" % (
-                attrname,
-                class_mapper(self._cache[attrname]).mapped_table
-            ))
+                "Attribute '%s' is already mapped to '%s'"
+                % (attrname, class_mapper(self._cache[attrname]).mapped_table)
+            )
 
         if tablename is not None:
             if not isinstance(tablename, str):
-                raise ArgumentError("'tablename' argument must be a string."
-                                    )
+                raise ArgumentError("'tablename' argument must be a string.")
             if selectable is not None:
-                raise ArgumentError("'tablename' and 'selectable' "
-                                    "arguments are mutually exclusive")
+                raise ArgumentError("'tablename' and 'selectable' " "arguments are mutually exclusive")
 
-            selectable = Table(tablename,
-                                        self._metadata,
-                                        autoload=True,
-                                        autoload_with=self.bind,
-                                        schema=schema or self.schema)
+            selectable = Table(
+                tablename, self._metadata, autoload=True, autoload_with=self.bind, schema=schema or self.schema
+            )
         elif schema:
-            raise ArgumentError("'tablename' argument is required when "
-                                "using 'schema'.")
+            raise ArgumentError("'tablename' argument is required when " "using 'schema'.")
         elif selectable is not None:
             if not isinstance(selectable, expression.FromClause):
-                raise ArgumentError("'selectable' argument must be a "
-                                    "table, select, join, or other "
-                                    "selectable construct.")
+                raise ArgumentError(
+                    "'selectable' argument must be a " "table, select, join, or other " "selectable construct."
+                )
         else:
-            raise ArgumentError("'tablename' or 'selectable' argument is "
-                                    "required.")
+            raise ArgumentError("'tablename' or 'selectable' argument is " "required.")
 
         if not selectable.primary_key.columns:
             if tablename:
-                raise SQLSoupError(
-                            "table '%s' does not have a primary "
-                            "key defined" % tablename)
+                raise SQLSoupError("table '%s' does not have a primary " "key defined" % tablename)
             else:
-                raise SQLSoupError(
-                            "selectable '%s' does not have a primary "
-                            "key defined" % selectable)
+                raise SQLSoupError("selectable '%s' does not have a primary " "key defined" % selectable)
 
-        mapped_cls = _class_for_table(
-            self.session,
-            self.engine,
-            selectable,
-            base or self.base,
-            mapper_args
-        )
+        mapped_cls = _class_for_table(self.session, self.engine, selectable, base or self.base, mapper_args)
         self._cache[attrname] = mapped_cls
         return mapped_cls
-
 
     def map(self, selectable, base=None, **mapper_args):
         """Map a selectable directly.
@@ -378,13 +363,7 @@ class SQLSoup(object):
 
         """
 
-        return _class_for_table(
-            self.session,
-            self.engine,
-            selectable,
-            base or self.base,
-            mapper_args
-        )
+        return _class_for_table(self.session, self.engine, selectable, base or self.base, mapper_args)
 
     def with_labels(self, selectable, base=None, **mapper_args):
         """Map a selectable directly, wrapping the
@@ -406,12 +385,12 @@ class SQLSoup(object):
 
         # TODO give meaningful aliases
         return self.map(
-                    expression._clause_element_as_expr(selectable).
-                            select(use_labels=True).
-                            alias('foo'), base=base, **mapper_args)
+            expression._clause_element_as_expr(selectable).select(use_labels=True).alias("foo"),
+            base=base,
+            **mapper_args
+        )
 
-    def join(self, left, right, onclause=None, isouter=False,
-                base=None, **mapper_args):
+    def join(self, left, right, onclause=None, isouter=False, base=None, **mapper_args):
         """Create an :func:`.expression.join` and map to it.
 
         The class and its mapping are not cached and will
@@ -450,5 +429,4 @@ class SQLSoup(object):
         return self.entity(attr)
 
     def __repr__(self):
-        return 'SQLSoup(%r)' % self._metadata
-
+        return "SQLSoup(%r)" % self._metadata
