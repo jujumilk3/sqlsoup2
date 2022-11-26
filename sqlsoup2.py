@@ -1,8 +1,3 @@
-"""
-
-"""
-from typing import Union
-
 from sqlalchemy import MetaData, Table, join, schema, sql, util
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import (attributes, class_mapper, mapper, object_session,
