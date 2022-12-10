@@ -8,7 +8,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import scoped_session, sessionmaker, mapper, \
                             class_mapper, relationship, session,\
                             object_session, attributes
-from sqlalchemy.orm.interfaces import MapperExtension, EXT_CONTINUE
+from sqlalchemy.orm.interfaces import EXT_CONTINUE
 from sqlalchemy.sql import expression
 
 __version__ = '0.0.1'
@@ -23,30 +23,6 @@ object for each application thread which refers to it.
 
 """
 
-class AutoAdd(MapperExtension):
-    def __init__(self, scoped_session):
-        self.scoped_session = scoped_session
-
-    def instrument_class(self, mapper, class_):
-        class_.__init__ = self._default__init__(mapper)
-
-    def _default__init__(ext, mapper):
-        def __init__(self, **kwargs):
-            for key, value in kwargs.items():
-                setattr(self, key, value)
-        return __init__
-
-    def init_instance(self, mapper, class_, oldinit, instance, args, kwargs):
-        session = self.scoped_session()
-        state = attributes.instance_state(instance)
-        session._save_impl(state)
-        return EXT_CONTINUE
-
-    def init_failed(self, mapper, class_, oldinit, instance, args, kwargs):
-        sess = object_session(instance)
-        if sess:
-            sess.expunge(instance)
-        return EXT_CONTINUE
 
 class SQLSoupError(Exception):
     pass
@@ -121,7 +97,6 @@ def _selectable_name(selectable):
         return x
 
 def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
-    selectable = expression._clause_element_as_expr(selectable)
     mapname = 'Mapped' + _selectable_name(selectable)
 
     if isinstance(selectable, Table):
@@ -161,7 +136,6 @@ def _class_for_table(session, engine, selectable, base_cls, mapper_kwargs):
     klass.c = expression.ColumnCollection()
     mappr = mapper(klass,
                    selectable,
-                   extension=AutoAdd(session),
                    **mapper_kwargs)
 
     for k in mappr.iterate_properties:
@@ -194,7 +168,7 @@ class SQLSoup(object):
 
         if isinstance(engine_or_metadata, MetaData):
             self._metadata = engine_or_metadata
-        elif isinstance(engine_or_metadata, str + (Engine, )):
+        elif isinstance(engine_or_metadata, (Engine, str)):
             self._metadata = MetaData(engine_or_metadata)
         else:
             raise ArgumentError("invalid engine or metadata argument %r" %
