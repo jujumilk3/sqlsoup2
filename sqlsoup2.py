@@ -1,14 +1,6 @@
 from sqlalchemy import MetaData, Table, join, schema, sql, util
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import (
-    Mapper,
-    class_mapper,
-    mapper,
-    relationship,
-    scoped_session,
-    session,
-    sessionmaker,
-)
+from sqlalchemy.orm import Mapper, class_mapper, mapper, relationship, scoped_session, session, sessionmaker
 from sqlalchemy.sql import expression
 
 __version__ = "0.0.1"
