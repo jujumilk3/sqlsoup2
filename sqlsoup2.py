@@ -2,16 +2,13 @@ from sqlalchemy import MetaData, Table, join, schema, sql, util
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import (
     Mapper,
-    attributes,
     class_mapper,
     mapper,
-    object_session,
     relationship,
     scoped_session,
     session,
     sessionmaker,
 )
-from sqlalchemy.orm.interfaces import EXT_CONTINUE, MapperOption
 from sqlalchemy.sql import expression
 
 __version__ = "0.0.1"
@@ -25,33 +22,6 @@ and provides a new :class:`sqlalchemy.orm.session.Session`
 object for each application thread which refers to it.
 
 """
-
-
-class AutoAdd(MapperOption):
-    def __init__(self, scoped_session):
-        self.scoped_session = scoped_session
-
-    def instrument_class(self, mapper, class_):
-        class_.__init__ = self._default__init__(mapper)
-
-    def _default__init__(ext, mapper):
-        def __init__(self, **kwargs):
-            for key, value in kwargs.items():
-                setattr(self, key, value)
-
-        return __init__
-
-    def init_instance(self, mapper, class_, oldinit, instance, args, kwargs):
-        session = self.scoped_session()
-        state = attributes.instance_state(instance)
-        session._save_impl(state)
-        return EXT_CONTINUE
-
-    def init_failed(self, mapper, class_, oldinit, instance, args, kwargs):
-        sess = object_session(instance)
-        if sess:
-            sess.expunge(instance)
-        return EXT_CONTINUE
 
 
 class SQLSoupError(Exception):
